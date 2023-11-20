@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/easymomo/go-bookings/pkg/config"
-	"github.com/easymomo/go-bookings/pkg/handlers"
-	"github.com/easymomo/go-bookings/pkg/render"
+	"github.com/easymomo/go-bookings/internal/config"
+	"github.com/easymomo/go-bookings/internal/handlers"
+	"github.com/easymomo/go-bookings/internal/render"
 
 	"github.com/alexedwards/scs/v2"
 )
