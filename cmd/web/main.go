@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
+	"github.com/easymomo/go-bookings/internal/models"
 	"log"
 	"net/http"
 	"time"
@@ -21,6 +23,10 @@ var session *scs.SessionManager
 
 // main is the main application function
 func main() {
+	// Things we can store in the session, primitives and string can be added by default but we need
+	// to tell the application about structs we created ourselves
+	gob.Register(models.Reservation{})
+
 	// Change this to true when in production
 	app.InProduction = false
 

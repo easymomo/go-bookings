@@ -23,11 +23,14 @@ func NewTemplates(a *config.AppConfig) {
 }
 
 func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateData {
+	td.Flash = app.Session.PopString(r.Context(), "flash")
+	td.Error = app.Session.PopString(r.Context(), "error")
+	td.Warning = app.Session.PopString(r.Context(), "warning")
 	td.CSRFToken = nosurf.Token(r)
 	return td
 }
 
-func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, gohtml string, td *models.TemplateData) {
 	var tc map[string]*template.Template
 	if app.UseCache {
 		// Get the template cache from the app config
@@ -39,7 +42,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, td *mod
 	var err error
 
 	// Get the requested template from cache
-	t, ok := tc[tmpl]
+	t, ok := tc[gohtml]
 	if !ok {
 		log.Fatal("Error, could not get the template from template cache")
 	}
@@ -66,14 +69,14 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	// myCache := make(map[string]*template.Template)
 	myCache := map[string]*template.Template{}
 
-	// Get all of the files named *.page.tmpl from ./template
-	pages, err := filepath.Glob("./templates/*.page.tmpl")
+	// Get all of the files named *.page.gohtml from ./template
+	pages, err := filepath.Glob("./templates/*.page.gohtml")
 	if err != nil {
-		fmt.Print("Error while getting the *.page.tmpl from ./template")
+		fmt.Print("Error while getting the *.page.gohtml from ./template")
 		return myCache, err
 	}
 
-	// range through all the files ending with *.page.tmpl
+	// range through all the files ending with *.page.gohtml
 	for _, page := range pages {
 		// Extract the name from the full path
 		name := filepath.Base(page)
@@ -83,14 +86,14 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 			return myCache, err
 		}
 
-		matches, err := filepath.Glob("./templates/*.layout.tmpl")
+		matches, err := filepath.Glob("./templates/*.layout.gohtml")
 		if err != nil {
 			fmt.Print("Error while searching for the layout files with filepath.Glob")
 			return myCache, err
 		}
 
 		if len(matches) > 0 {
-			ts, err = ts.ParseGlob("./templates/*.layout.tmpl")
+			ts, err = ts.ParseGlob("./templates/*.layout.gohtml")
 			if err != nil {
 				fmt.Print("Error while parsing the layout files with filepath.Glob")
 				return myCache, err
