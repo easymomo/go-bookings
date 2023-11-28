@@ -3,16 +3,14 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
+	"github.com/easymomo/go-bookings/internal/config"
+	"github.com/easymomo/go-bookings/internal/handlers"
 	"github.com/easymomo/go-bookings/internal/models"
+	"github.com/easymomo/go-bookings/internal/render"
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/easymomo/go-bookings/internal/config"
-	"github.com/easymomo/go-bookings/internal/handlers"
-	"github.com/easymomo/go-bookings/internal/render"
-
-	"github.com/alexedwards/scs/v2"
 )
 
 // Variables declared here (before the main function) are available to every function in the main package
@@ -23,6 +21,23 @@ var session *scs.SessionManager
 
 // main is the main application function
 func main() {
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(fmt.Printf("Starting the server on port %s", portNumber))
+
+	srv := &http.Server{
+		Addr:    portNumber,
+		Handler: routes(&app),
+	}
+
+	err = srv.ListenAndServe()
+	log.Fatal(err)
+}
+
+func run() error {
 	// Things we can store in the session, primitives and string can be added by default but we need
 	// to tell the application about structs we created ourselves
 	gob.Register(models.Reservation{})
@@ -41,6 +56,7 @@ func main() {
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("Cannot create template cache")
+		return err
 	}
 
 	app.TemplateCache = tc
@@ -51,13 +67,5 @@ func main() {
 	repo := handlers.NewRepo(&app)
 	handlers.NewHandlers(repo)
 
-	fmt.Println(fmt.Printf("Starting the server on port %s", portNumber))
-
-	srv := &http.Server{
-		Addr:    portNumber,
-		Handler: routes(&app),
-	}
-
-	err = srv.ListenAndServe()
-	log.Fatal(err)
+	return nil
 }

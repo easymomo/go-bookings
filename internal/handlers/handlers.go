@@ -37,7 +37,7 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	remoteIp := r.RemoteAddr
 	m.App.Session.Put(r.Context(), "remoteIp", remoteIp)
 
-	render.RenderTemplate(w, r, "home.page.gohtml", &models.TemplateData{})
+	_ = render.RenderTemplate(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
 // About is a function that returns the about page
@@ -51,7 +51,7 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	stringMap["remoteIp"] = remoteIp
 
 	// Send the data to the template
-	render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{
+	_ = render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{
 		StringMap: stringMap,
 	})
 }
@@ -63,7 +63,7 @@ func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 	data["reservation"] = emptyReservation
 
 	// Send the data to the template
-	render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models.TemplateData{
+	_ = render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models.TemplateData{
 		Form: forms.New(nil),
 		Data: data,
 	})
@@ -88,14 +88,14 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 
 	// form.Has("first_name", r)
 	form.Required("first_name", "last_name", "email")
-	form.MinLength("first_name", 3, r)
+	form.MinLength("first_name", 3)
 	form.IsEmail("email")
 
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
 
-		render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models.TemplateData{
+		_ = render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -110,19 +110,19 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 // Generals renders the room page
 func (m *Repository) Generals(w http.ResponseWriter, r *http.Request) {
 	// Send the data to the template
-	render.RenderTemplate(w, r, "generals.page.gohtml", &models.TemplateData{})
+	_ = render.RenderTemplate(w, r, "generals.page.gohtml", &models.TemplateData{})
 }
 
 // Majors renders the room page
 func (m *Repository) Majors(w http.ResponseWriter, r *http.Request) {
 	// Send the data to the template
-	render.RenderTemplate(w, r, "majors.page.gohtml", &models.TemplateData{})
+	_ = render.RenderTemplate(w, r, "majors.page.gohtml", &models.TemplateData{})
 }
 
 // Availability renders the search availability page
 func (m *Repository) Availability(w http.ResponseWriter, r *http.Request) {
 	// Send the data to the template
-	render.RenderTemplate(w, r, "search-availability.page.gohtml", &models.TemplateData{})
+	_ = render.RenderTemplate(w, r, "search-availability.page.gohtml", &models.TemplateData{})
 }
 
 // PostAvailability renders the search availability page
@@ -157,7 +157,7 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 // Contact renders the contact page
 func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
 	// Send the data to the template
-	render.RenderTemplate(w, r, "contact.page.gohtml", &models.TemplateData{})
+	_ = render.RenderTemplate(w, r, "contact.page.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +175,7 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
 
-	render.RenderTemplate(w, r, "reservation-summary.page.gohtml", &models.TemplateData{
+	_ = render.RenderTemplate(w, r, "reservation-summary.page.gohtml", &models.TemplateData{
 		Data: data,
 	})
 }

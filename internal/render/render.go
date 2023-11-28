@@ -2,6 +2,7 @@ package render
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -13,9 +14,11 @@ import (
 	"github.com/justinas/nosurf"
 )
 
+// functions is a variable that holds all the functions we want to make available to our go templates
 var functions = template.FuncMap{}
 
 var app *config.AppConfig
+var pathToTemplates = "./templates"
 
 // NewTemplates sets the config for the template package
 func NewTemplates(a *config.AppConfig) {
@@ -30,7 +33,7 @@ func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateDa
 	return td
 }
 
-func RenderTemplate(w http.ResponseWriter, r *http.Request, gohtml string, td *models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, gohtml string, td *models.TemplateData) error {
 	var tc map[string]*template.Template
 	if app.UseCache {
 		// Get the template cache from the app config
@@ -44,7 +47,8 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, gohtml string, td *m
 	// Get the requested template from cache
 	t, ok := tc[gohtml]
 	if !ok {
-		log.Fatal("Error, could not get the template from template cache")
+		// log.Println("Error, could not get the template from template cache")
+		return errors.New("can't get template from cache")
 	}
 
 	buf := new(bytes.Buffer)
@@ -55,6 +59,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, gohtml string, td *m
 	if err != nil {
 		fmt.Print("Error while executing the template")
 		log.Println(err)
+		return err
 	}
 
 	// render the template
@@ -62,15 +67,18 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, gohtml string, td *m
 	if err != nil {
 		fmt.Print("Error while writing to the IO")
 		log.Println(err)
+		return err
 	}
+
+	return nil
 }
 
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	// myCache := make(map[string]*template.Template)
 	myCache := map[string]*template.Template{}
 
-	// Get all of the files named *.page.gohtml from ./template
-	pages, err := filepath.Glob("./templates/*.page.gohtml")
+	// Get all the files named *.page.gohtml from ./template
+	pages, err := filepath.Glob(fmt.Sprintf("%s/*.page.gohtml", pathToTemplates))
 	if err != nil {
 		fmt.Print("Error while getting the *.page.gohtml from ./template")
 		return myCache, err
@@ -86,14 +94,14 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 			return myCache, err
 		}
 
-		matches, err := filepath.Glob("./templates/*.layout.gohtml")
+		matches, err := filepath.Glob(fmt.Sprintf("%s/*.layout.gohtml", pathToTemplates))
 		if err != nil {
 			fmt.Print("Error while searching for the layout files with filepath.Glob")
 			return myCache, err
 		}
 
 		if len(matches) > 0 {
-			ts, err = ts.ParseGlob("./templates/*.layout.gohtml")
+			ts, err = ts.ParseGlob(fmt.Sprintf("%s/*.layout.gohtml", pathToTemplates))
 			if err != nil {
 				fmt.Print("Error while parsing the layout files with filepath.Glob")
 				return myCache, err

@@ -2,3 +2,5 @@ Bookings.code-workspace
 .idea
 .DS_Store
 logs
+coverage.out
+/bookings
