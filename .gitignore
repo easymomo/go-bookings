@@ -6,3 +6,4 @@ coverage.out
 /bookings
 database.yml
 .DS_Store
+.env
