@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/easymomo/go-bookings/internal/helpers"
 	"net/http"
 
 	"github.com/easymomo/go-bookings/internal/config"
@@ -34,26 +34,12 @@ func NewHandlers(r *Repository) {
 
 // Home is a function that returns the home page
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	remoteIp := r.RemoteAddr
-	m.App.Session.Put(r.Context(), "remoteIp", remoteIp)
-
 	_ = render.RenderTemplate(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
 // About is a function that returns the about page
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
-	// Perform some logic
-	stringMap := make(map[string]string)
-	stringMap["test"] = "Hello, again"
-
-	// the local variable remoteIp will be an empty string if the session variable is empty
-	remoteIp := m.App.Session.GetString(r.Context(), "remoteIp")
-	stringMap["remoteIp"] = remoteIp
-
-	// Send the data to the template
-	_ = render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{
-		StringMap: stringMap,
-	})
+	_ = render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{})
 }
 
 // Reservation is a function that returns the reservation page
@@ -73,7 +59,7 @@ func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 		return
 	}
 
@@ -147,7 +133,8 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 
 	out, err := json.MarshalIndent(resp, "", "     ")
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
+		return
 	}
 
 	w.Header().Set("content-type", "application/json")
@@ -163,7 +150,7 @@ func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
 func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	reservation, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
-		log.Println("Cannot get reservation from the session")
+		m.App.ErrorLog.Println("Cannot get reservation from the session")
 		m.App.Session.Put(r.Context(), "error", "Can't get reservation from the session")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return

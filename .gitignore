@@ -4,3 +4,5 @@ Bookings.code-workspace
 logs
 coverage.out
 /bookings
+database.yml
+.DS_Store

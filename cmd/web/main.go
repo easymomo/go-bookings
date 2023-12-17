@@ -6,10 +6,12 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/easymomo/go-bookings/internal/config"
 	"github.com/easymomo/go-bookings/internal/handlers"
+	"github.com/easymomo/go-bookings/internal/helpers"
 	"github.com/easymomo/go-bookings/internal/models"
 	"github.com/easymomo/go-bookings/internal/render"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -18,6 +20,8 @@ const portNumber = ":8080"
 
 var app config.AppConfig
 var session *scs.SessionManager
+var infoLog *log.Logger
+var errorLog *log.Logger
 
 // main is the main application function
 func main() {
@@ -45,6 +49,12 @@ func run() error {
 	// Change this to true when in production
 	app.InProduction = false
 
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.InfoLog = infoLog
+
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
+
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
 	session.Cookie.Persist = true
@@ -60,12 +70,12 @@ func run() error {
 	}
 
 	app.TemplateCache = tc
-	render.NewTemplates(&app)
-
 	app.UseCache = false
 
 	repo := handlers.NewRepo(&app)
 	handlers.NewHandlers(repo)
+	render.NewTemplates(&app)
+	helpers.NewHelpers(&app)
 
 	return nil
 }
